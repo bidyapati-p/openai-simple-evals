@@ -1,11 +1,10 @@
-import base64
 import time
 from typing import Any
 
 import openai
-from openai import OpenAI
+from openai import AzureOpenAI
 
-from ..types import MessageList, SamplerBase
+from types1 import MessageList, SamplerBase
 
 OPENAI_SYSTEM_MESSAGE_API = "You are a helpful assistant."
 OPENAI_SYSTEM_MESSAGE_CHATGPT = (
@@ -21,19 +20,21 @@ class ChatCompletionSampler(SamplerBase):
 
     def __init__(
         self,
-        model: str = "gpt-3.5-turbo",
+        model: str = "gpt-4-turbo",
         system_message: str | None = None,
         temperature: float = 0.5,
         max_tokens: int = 1024,
     ):
-        self.api_key_name = "OPENAI_API_KEY"
-        self.client = OpenAI()
+        self.api_key_name = "<OPENAI_API_KEY>"
+        #self.client = OpenAI()
         # using api_key=os.environ.get("OPENAI_API_KEY")  # please set your API_KEY
         self.model = model
         self.system_message = system_message
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.image_format = "url"
+        self.api_version="2023-03-15-preview"
+        self.azure_endpoint = "<AZURE_OPENAI_URL>"
 
     def _handle_image(
         self, image: str, encoding: str = "base64", format: str = "png", fovea: int = 768
@@ -56,20 +57,31 @@ class ChatCompletionSampler(SamplerBase):
         if self.system_message:
             message_list = [self._pack_message("system", self.system_message)] + message_list
         trial = 0
+        client = AzureOpenAI(api_key=self.api_key_name,
+                             api_version= self.api_version,
+                             azure_endpoint=self.azure_endpoint,
+                             timeout=30,
+                             max_retries=3)
         while True:
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
+                #response = client.chat.completions.create(
+                #    model=self.model,
+                #    messages=message_list,
+                #    temperature=self.temperature,
+                #    max_tokens=self.max_tokens,
+                #)
+                response = client.chat.completions.create(
                     messages=message_list,
+                    model=self.model,
                     temperature=self.temperature,
-                    max_tokens=self.max_tokens,
-                )
+                    max_tokens=self.max_tokens)
                 return response.choices[0].message.content
             # NOTE: BadRequestError is triggered once for MMMU, please uncomment if you are reruning MMMU
             except openai.BadRequestError as e:
                 print("Bad Request Error", e)
                 return ""
             except Exception as e:
+                print(e)
                 exception_backoff = 2**trial  # expontial back off
                 print(
                     f"Rate limit exception so wait and retry {trial} after {exception_backoff} sec",

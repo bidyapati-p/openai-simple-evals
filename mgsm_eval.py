@@ -10,26 +10,27 @@ from typing import Optional
 
 import blobfile as bf
 
-from . import common
-from .mmlu_eval import HTML_JINJA
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+#from . \
+import common
+from mmlu_eval import HTML_JINJA
+from types1 import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 ALL_LANGUAGES = ["bn", "de", "en", "es", "fr", "ja", "ru", "sw", "te", "th", "zh"]
 LATIN_LANGUAGES = ["de", "en", "es", "fr", "sw"]
 NON_LATIN_LANGUAGES = ["bn", "ja", "ru", "te", "th", "zh"]
 
 LANG_TO_FPATH = {
-    "bn": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_bn.tsv",
-    "de": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_de.tsv",
-    "en": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_en.tsv",
-    "es": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_es.tsv",
-    "fr": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_fr.tsv",
-    "ja": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_ja.tsv",
-    "ru": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_ru.tsv",
-    "sw": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_sw.tsv",
-    "te": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_te.tsv",
-    "th": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_th.tsv",
-    "zh": "https://openaipublic.blob.core.windows.net/simple-evals/mgsm_zh.tsv",
+    "bn": "./data/mgsm_bn.tsv",
+    "de": "./data/mgsm_de.tsv",
+    "en": "./data/mgsm_en.tsv",
+    "es": "./data/mgsm_es.tsv",
+    "fr": "./data/mgsm_fr.tsv",
+    "ja": "./data/mgsm_ja.tsv",
+    "ru": "./data/mgsm_ru.tsv",
+    "sw": "./data/mgsm_sw.tsv",
+    "te": "./data/mgsm_te.tsv",
+    "th": "./data/mgsm_th.tsv",
+    "zh": "./data/mgsm_zh.tsv",
 }
 LANG_TO_INSTRUCTIONS = {
     "en": """Solve this math problem. Give the reasoning steps before giving the final answer on the last line by itself in the format of "Answer:". Do not add anything other than the integer answer after "Answer:".

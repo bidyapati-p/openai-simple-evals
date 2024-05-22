@@ -10,9 +10,10 @@ import re
 import blobfile as bf
 import pandas
 
-from . import common
-from .common import ANSWER_PATTERN_MULTICHOICE, HTML_JINJA, format_multichoice_question
-from .types import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
+#from . \
+import common
+from common import ANSWER_PATTERN_MULTICHOICE, HTML_JINJA, format_multichoice_question
+from types1 import Eval, EvalResult, MessageList, SamplerBase, SingleEvalResult
 
 
 class GPQAEval(Eval):
@@ -22,9 +23,10 @@ class GPQAEval(Eval):
         variant: str = "diamond",
         num_examples: int | None = None,  # restrict to a subset of the data for debugging
     ):
+        print(f"Reading ./data/gpqa_{variant}.csv")
         df = pandas.read_csv(
             bf.BlobFile(
-                f"https://openaipublic.blob.core.windows.net/simple-evals/gpqa_{variant}.csv"
+                f"./data/gpqa_{variant}.csv"
             )
         )
         examples = [row.to_dict() for _, row in df.iterrows()]

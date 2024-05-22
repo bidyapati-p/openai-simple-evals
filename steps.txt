@@ -1,0 +1,12 @@
+Changes:
+1. All imports with relative path are changed
+2. types.py changed to types1.py to fix the conflict with python library
+3. All files are downloaded into ./data folder
+4. Added nowllm sampler (http wrapper and reqest_resp_handler code)
+
+Install:
+Follow the steps in the Setup section from Readme
+update the following:
+1. chat_completion_sampler.py: <OPENAI_API_KEY> and <AZURE_OPENAI_URL>
+2. nowllm_sampler.py: <NOWLLM_URL> and <AUTH_BEARER_TOKEN>
+3. demo.py : uncomment line 29 to 32 for gpt4

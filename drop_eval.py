@@ -15,9 +15,10 @@ import blobfile as bf
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-from . import common
-from .common import ANSWER_PATTERN, HTML_JINJA
-from .types import Eval, EvalResult, SamplerBase, SingleEvalResult
+#from . \
+import common
+from common import ANSWER_PATTERN, HTML_JINJA
+from types1 import Eval, EvalResult, SamplerBase, SingleEvalResult
 
 """
 From here through _normalize_answer was originally copied from:
@@ -240,10 +241,10 @@ class DropEval(Eval):
         self._num_examples = num_examples
         self._train_samples_per_prompt = train_samples_per_prompt
         self.train_jsonl = (
-            "https://openaipublic.blob.core.windows.net/simple-evals/drop_v0_train.jsonl.gz"
+            "./data/drop_v0_train.jsonl.gz"
         )
         self.test_jsonl = (
-            "https://openaipublic.blob.core.windows.net/simple-evals/drop_v0_dev.jsonl.gz"
+            "./data/drop_v0_dev.jsonl.gz"
         )
         with gzip.GzipFile(fileobj=bf.BlobFile(self.train_jsonl, "rb"), mode="rb") as f:
             self.train_samples = list(map(json.loads, f.readlines()))
