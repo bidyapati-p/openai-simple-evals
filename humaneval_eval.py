@@ -14,11 +14,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from typing import Any, Tuple
 
-import blobfile as bf
+
 import tqdm
-from human_eval.data import HUMAN_EVAL, read_problems
-from human_eval.evaluation import estimate_pass_at_k
-from human_eval.execution import check_correctness  # , unsafe_execute
+from humaneval.human_eval.data import HUMAN_EVAL, read_problems
+from humaneval.human_eval.evaluation import estimate_pass_at_k
+from humaneval.human_eval.execution import check_correctness  # , unsafe_execute
 
 #from . \
 import common
@@ -86,7 +86,7 @@ class HumanEval(Eval):
 
         def fn(sample: dict[str, str]):
             prompt_messages = [
-                sampler._pack_mesage(role="user", content=instruction + sample["prompt"])
+                sampler._pack_message(role="user", content=instruction + sample["prompt"])
             ]
             completions = [
                 find_code(sampler(prompt_messages)) for _ in range(self._num_samples_per_task)

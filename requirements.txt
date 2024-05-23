@@ -1,0 +1,7 @@
+blobfile
+pandas
+scipy
+jinja2
+anthropic
+openai
+tabulate

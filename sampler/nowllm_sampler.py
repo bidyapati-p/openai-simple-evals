@@ -22,8 +22,8 @@ class NowLLMCompletionSampler(SamplerBase):
         temperature: float = 0.0,  # default in Anthropic example
         max_tokens: int = 1024,
     ):
-        self.api = "<NOWLLM_URL>"
-        self.auth = "<AUTH_BEARER_TOKEN>"
+        self.api = "https://a3c3b986-a21e-4533-a3e3-5c9550dcc35e-8080.job.console.elementai.com/generate"
+        self.auth = "Bearer 8o30OElfDYV_D6YbbznT0A:GDC2BsXIfSdfjv9iWka3V4MkazpvHfe0cCwXohzbP0Q"
         self.model = model
         self.system_message = system_message
         self.temperature = temperature
@@ -71,6 +71,12 @@ class NowLLMCompletionSampler(SamplerBase):
                 text = text + "<|user|>" + m.get("content") + "<|end|>\n"
             if m.get("role") == "assistant":
                 text = text + "<|assistant|>" + m.get("content") + "<|end|>\n"
+        return text
+    
+    def replace_special_tokens(self, text):
+        special_tokens= ["<|end|>", "<|endoftext|>","<|user|>", "<|assistant|>"]
+        for token in special_tokens:
+            text = text.replace(token, "")
         return text
 
     def __call__(self, message_list: MessageList) -> str:
