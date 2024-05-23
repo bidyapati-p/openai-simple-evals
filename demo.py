@@ -33,7 +33,7 @@ def main():
         "NowLLM-test1": NowLLMCompletionSampler(
             model="NowLLM-test1",
             system_message=None,
-            temperature=0.0001
+            temperature=0.1
         ),
         # "gpt-4-turbo-2024-04-09_assistant": ChatCompletionSampler(
         #    model="gpt-4-turbo-2024-04-09",
@@ -78,7 +78,7 @@ def main():
                 raise Exception(f"Unrecoginized eval type: {eval_name}")
 
     evals = {
-        eval_name: get_evals(eval_name) for eval_name in ["mmlu"]#, "math", "gpqa", "mgsm", "drop"]
+        eval_name: get_evals(eval_name) for eval_name in ["humaneval"]#, "math", "gpqa", "mgsm", "drop"]
     }
     print(evals)
     debug_suffix = "_DEBUG" if debug else ""
