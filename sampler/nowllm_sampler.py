@@ -71,7 +71,7 @@ class NowLLMCompletionSampler(SamplerBase):
                 text = text + "<|user|>" + m.get("content") + "<|end|>\n"
             if m.get("role") == "assistant":
                 text = text + "<|assistant|>" + m.get("content") + "<|end|>\n"
-        return text
+        return text.strip()
     
     def replace_special_tokens(self, text):
         special_tokens= ["<|end|>", "<|endoftext|>","<|user|>", "<|assistant|>"]
