@@ -10,3 +10,9 @@ update the following:
 1. chat_completion_sampler.py: <OPENAI_API_KEY> and <AZURE_OPENAI_URL>
 2. nowllm_sampler.py: <NOWLLM_URL> and <AUTH_BEARER_TOKEN>
 3. demo.py : uncomment line 29 to 32 for gpt4
+
+Data File:
+This file need to be placed under data folder, as it is big file, it is yet to commit.
+https://openaipublic.blob.core.windows.net/simple-evals/drop_v0_train.jsonl.gz
+Reference:
+https://github.com/openai/simple-evals/blob/main/drop_eval.py#L243
