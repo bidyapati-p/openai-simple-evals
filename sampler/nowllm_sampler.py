@@ -73,6 +73,12 @@ class NowLLMCompletionSampler(SamplerBase):
                 text = text + "<|assistant|>" + m.get("content") + "<|end|>\n"
         return text.strip()
     
+    def convert_to_plaintext(self, message_list: MessageList):
+        text = ""
+        for m in message_list:
+            text = text + m.get("content") + "\n"
+        return text.strip()
+    
     def replace_special_tokens(self, text):
         special_tokens= ["<|end|>", "<|endoftext|>","<|user|>", "<|assistant|>"]
         for token in special_tokens:
@@ -82,7 +88,7 @@ class NowLLMCompletionSampler(SamplerBase):
     def __call__(self, message_list: MessageList) -> str:
         trial = 0
         msgBody = self.req_resp_hndlr.get_input_msg(self.convert_to_text(message_list),
-                                                    {"temperature": self.temperature, "max_new_token": self.max_tokens})
+                                                    {"temperature": self.temperature, "max_new_token": self.max_tokens, "stop":["<|end|>"]})
         print(f"{self.name()} input message body: {str(msgBody)}")
         header_json = self.req_resp_hndlr.get_header_json(self.auth)
 
