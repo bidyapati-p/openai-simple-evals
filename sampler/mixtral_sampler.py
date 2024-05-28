@@ -1,21 +1,23 @@
 import asyncio
 import time
 
+
 from .http_wrapper import HttpWrapper
 from .request_resp_handler import RequestRespHandler
 from types1 import MessageList, SamplerBase
+from transformers import AutoTokenizer
 
 # reference: https://github.com/lm-sys/FastChat/blob/7899355ebe32117fdae83985cf8ee476d2f4243f/fastchat/conversation.py#L894
 
 
-class NowLLMCompletionSampler(SamplerBase):
+class MixtralInstructCompletionSampler(SamplerBase):
     """
     Sample from NOWLLM API
     """
 
     def __init__(
         self,
-        model: str = "NowLLM",
+        model: str = "Mixtral",
         system_message: str | None = None,
         temperature: float = 0.0,  # default in Anthropic example
         max_tokens: int = 1024,
@@ -27,6 +29,7 @@ class NowLLMCompletionSampler(SamplerBase):
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.image_format = "base64"
+        self.formatter = HFChatTemplateFormatter("mistralai/Mistral-7B-Instruct-v0.1", has_system_turn=False)
 
         # set client now
         self.inf_typ = "tgi"
@@ -60,26 +63,35 @@ class NowLLMCompletionSampler(SamplerBase):
     def _pack_message(self, role, content):
         return {"role": str(role), "content": content}
 
+    
     def convert_to_text(self, message_list: MessageList):
-        text = ""
+        new_message_list = []
         for m in message_list:
-            if m.get("role") == "system":
-                text = text + "<|system|>" + m.get("content") + "<|end|>\n"
-            if m.get("role") == "user":
-                text = text + "<|user|>" + m.get("content") + "<|end|>\n"
-            if m.get("role") == "assistant":
-                text = text + "<|assistant|>" + m.get("content") + "<|end|>\n"
-        
-        if not text.endswith("<|assistant|>"):
-            text = text + "<|assistant|>"
-        
-        return text.strip()
+            new_message_list.append({m.get("role"):m.get("content")})
+        text = self.build_conversation_text(new_message_list)
+        return text
     
     def convert_to_plaintext(self, message_list: MessageList):
         text = ""
         for m in message_list:
             text = text + m.get("content") + "\n"
         return text.strip()
+
+    
+    def build_conversation_text(self, inputs_pretok):
+        """
+        Build the conversation text from the input dictionary
+        """
+        conversation_text = ""
+        if isinstance(inputs_pretok, str):
+            conversation_text = inputs_pretok
+        elif isinstance(inputs_pretok, list):
+            # if list formatted data with role based text, convert based on model
+            conversation_text += self.formatter.build_conversation_text(inputs_pretok)
+        else:
+            raise Exception(f"Invalid input type: {type(inputs_pretok)}")
+
+        return conversation_text
     
     def replace_special_tokens(self, text):
         special_tokens= ["</s>","<|end|>", "<|endoftext|>","<|user|>", "<|assistant|>"]
@@ -90,7 +102,7 @@ class NowLLMCompletionSampler(SamplerBase):
     def __call__(self, message_list: MessageList) -> str:
         trial = 0
         msgBody = self.req_resp_hndlr.get_input_msg(self.convert_to_text(message_list),
-                                                    {"temperature": self.temperature, "max_new_token": self.max_tokens, "stop":["<|end|>"]})
+                                                    {"temperature": self.temperature, "max_new_token": self.max_tokens, "stop":["<|end|>", "</s>"]})
         print(f"{self.name()} input message body: {str(msgBody)}")
         header_json = self.req_resp_hndlr.get_header_json(self.auth)
 
@@ -120,3 +132,40 @@ class NowLLMCompletionSampler(SamplerBase):
                     print("SYSTEM IS OVERLOADED")
                     return " "
             # unknown error shall throw exception
+
+class HFChatTemplateFormatter:
+    ROLE_KEY_SYSTEM = "system"
+    ROLE_KEY_USER = "user"
+    ROLE_KEY_ASSISTANT = "assistant"
+    def __init__(self, hf_chat_template_model_id: str, has_system_turn: bool = True):
+        self.hf_chat_template_model_id = hf_chat_template_model_id
+        self.tokenizer = AutoTokenizer.from_pretrained(hf_chat_template_model_id)
+        self.has_system_turn = has_system_turn
+
+    def _get_next_item(self, inputs_pretok, idx):
+        input = inputs_pretok[idx]
+        # assumption is that the dict will have only one item
+        role = next(iter(input))
+        content = input[role]
+        return role, content, idx + 1
+
+    def build_conversation_text(self, inputs_pretok: list):
+        hf_formatted_messages = []
+        idx = 0
+        while idx < len(inputs_pretok):
+            role, content, idx = self._get_next_item(inputs_pretok, idx)
+            # append system turn to user turn since model does not support system turn
+            if role == HFChatTemplateFormatter.ROLE_KEY_SYSTEM and not self.has_system_turn:
+                next_role, next_content, idx = self._get_next_item(inputs_pretok, idx)
+                assert (
+                    next_role == HFChatTemplateFormatter.ROLE_KEY_USER
+                ), f"Applying chat template not possible for {self.hf_chat_template_model_id} since it does not support system turn and input does not contain system turn followed by user. Input: {inputs_pretok}"
+                if next_role == HFChatTemplateFormatter.ROLE_KEY_USER:
+                    role = next_role
+                    content = content + "\n\n" + next_content
+            hf_formatted_messages.append({"role": role, "content": content})
+
+        chat_formatted_text = self.tokenizer.apply_chat_template(
+            hf_formatted_messages, tokenize=False, add_generation_prompt=True
+        )
+        return chat_formatted_text
