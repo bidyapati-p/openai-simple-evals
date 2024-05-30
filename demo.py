@@ -17,6 +17,7 @@ from sampler.chat_completion_sampler import (
     ChatCompletionSampler,
 )
 from sampler.nowllm_sampler import NowLLMCompletionSampler
+from sampler.mixtral_sampler import MixtralInstructCompletionSampler
 
 
 # from .sampler.claude_sampler import ClaudeCompletionSampler, CLAUDE_SYSTEM_MESSAGE_LMSYS
@@ -30,8 +31,13 @@ def main():
         #    model="gpt-4-turbo",
         #    system_message=OPENAI_SYSTEM_MESSAGE_CHATGPT,
         #),
-        "NowLLM-test1": NowLLMCompletionSampler(
-            model="NowLLM-test1",
+        "NowLLM-Sampling": NowLLMCompletionSampler(
+            model="infer_nowllm_8x7b_05_18_24_2_epoch2_st",
+            system_message=None,
+            temperature=0.1
+        ),
+        "NowLLM-Mixtral-Sampling": MixtralInstructCompletionSampler(
+            model="mixtral_instruct_tgi_endpoint",
             system_message=None,
             temperature=0.1
         ),
@@ -87,7 +93,7 @@ def main():
         for eval_name, eval_obj in evals.items():
             result = eval_obj(sampler)
             # ^^^ how to use a sampler
-            file_stem = f"{eval_name}_{sampler_name}"
+            file_stem = f"{eval_name}_{sampler_name}_{sampler.model}"
             report_filename = f"/tmp/{file_stem}{debug_suffix}.html"
             print(f"Writing report to {report_filename}")
             with open(report_filename, "w") as fh:
